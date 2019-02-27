@@ -3,6 +3,7 @@
 #include <mutex>
 #include <vector>
 #include <time.h>
+#include <atomic>
 
 using namespace std;
 
@@ -10,39 +11,47 @@ static const int num_threads = 8;
 static const int buffer_count = 2;
 static const int cmd_count = 1000;
 
-static mutex mut_buffer[buffer_count];
+struct CmdQueue
+{
+    vector<int> buffer;
+    mutex lock;
+    atomic<bool> filled;
+};
 
-static vector<int> buffer[buffer_count];
-static int curr_prod_index = 0;
+static CmdQueue queues[buffer_count];
+static atomic<int> curr_prod_index(0);
+
 
 void doProduce(){
     int v;
     int buf_idx = curr_prod_index;
-    lock_guard<mutex> guard(mut_buffer[buf_idx]);
+    lock_guard<mutex> guard(queues[buf_idx].lock);
 
     cout << "Filling buffer: " << buf_idx << endl;
 
     for(size_t i = 0; i < cmd_count; i++)
     {
         v = rand() % 100;
-        buffer[buf_idx].push_back(v);
+        queues[buf_idx].buffer.push_back(v);
     }
-
-    curr_prod_index = (curr_prod_index + 1) % buffer_count;
+    queues[buf_idx].filled = true;
+    curr_prod_index = (curr_prod_index.load() + 1) % buffer_count;
 }
 
 void doConsume(){
-    int idx = (curr_prod_index + 1) % buffer_count;
-    lock_guard<mutex> guard(mut_buffer[idx]);
+    int idx = (curr_prod_index.load() + 1) % buffer_count;
+    int sum = 0;
+    lock_guard<mutex> guard(queues[idx].lock);
 
     cout << "Consume buffer: " << idx << endl;
-    cout << "Item: ";
 
-    for(auto it : buffer[idx]){
-        cout << it;
+    for(auto it : queues[idx].buffer){
+        sum += it;
     }
+    queues[idx].buffer.clear();
+    queues[idx].filled = false;
 
-    cout << endl;
+    cout << "Sum: " << sum << endl;
 }
 
 void t_prod(int count){
