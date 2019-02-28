@@ -1,57 +1,83 @@
-#include <iostream>
 #include <thread>
+#include <chrono>
 #include <mutex>
 #include <vector>
 #include <time.h>
 #include <atomic>
+#include <condition_variable>
+
+#define LOGURU_WITH_STREAMS 1
+
+#include "../common/loguru.cpp"
 
 using namespace std;
 
 static const int num_threads = 8;
 static const int buffer_count = 2;
 static const int cmd_count = 1000;
+static const int INVALID = INT_MAX;
+static mutex acquire_lock;
 
 struct CmdQueue
 {
     vector<int> buffer;
-    mutex lock;
-    atomic<bool> filled;
+    atomic<bool> isReady;
 };
 
 static CmdQueue queues[buffer_count];
-static atomic<int> curr_prod_index(0);
 
+int acquireBuffer(bool isReady){
+    lock_guard<mutex> guard(acquire_lock);
+
+    for(int i = 0; i < buffer_count; i++)
+    {
+        if(queues[i].isReady == isReady){
+            return i;
+        }
+    }
+    
+    return INVALID;
+}
 
 void doProduce(){
     int v;
-    int buf_idx = curr_prod_index;
-    lock_guard<mutex> guard(queues[buf_idx].lock);
+    int idx = acquireBuffer(false);
 
-    cout << "Filling buffer: " << buf_idx << endl;
+    if(idx == INVALID){
+        LOG_S(INFO) << "All Queues are full";
+        this_thread::sleep_for(chrono::milliseconds(1));
+        return;
+    }
+
+    LOG_S(INFO) << "Filling buffer: " << idx;
 
     for(size_t i = 0; i < cmd_count; i++)
     {
         v = rand() % 100;
-        queues[buf_idx].buffer.push_back(v);
+        queues[idx].buffer.push_back(v);
     }
-    queues[buf_idx].filled = true;
-    curr_prod_index = (curr_prod_index.load() + 1) % buffer_count;
+    queues[idx].isReady = true;
 }
 
 void doConsume(){
-    int idx = (curr_prod_index.load() + 1) % buffer_count;
     int sum = 0;
-    lock_guard<mutex> guard(queues[idx].lock);
+    int idx = acquireBuffer(true);
+    
+    if(idx == INVALID){
+        LOG_S(INFO) << "All buffers are empty";
+        this_thread::sleep_for(chrono::milliseconds(1));
+        return;
+    }
 
-    cout << "Consume buffer: " << idx << endl;
+    LOG_S(INFO) << "Consume buffer: " << idx;
 
     for(auto it : queues[idx].buffer){
         sum += it;
     }
     queues[idx].buffer.clear();
-    queues[idx].filled = false;
+    queues[idx].isReady = false;
 
-    cout << "Sum: " << sum << endl;
+    LOG_S(INFO) << "Sum: " << sum;
 }
 
 void t_prod(int count){
@@ -71,6 +97,7 @@ void t_consume(int count){
 
 int main(int argc, char* argv[])
 {
+    loguru::init(argc, argv);
     srand (time(NULL));
     thread t1(t_prod, 10);
     thread t2(t_consume, 10);
