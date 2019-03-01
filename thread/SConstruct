@@ -1,1 +1,3 @@
-Program('thread', Glob('*.cpp'))
+env = Environment(CPPPATH = ['.'])
+env.Append(CXXFLAGS = '-std=c++11')
+env.Program('prog', ['hello.cpp'])

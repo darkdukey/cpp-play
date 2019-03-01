@@ -1,3 +1,9 @@
+*.o
 *.obj
 *.exe
 *.dblite
+*.log
+
+.vscode/
+.DS_Store
+prog
