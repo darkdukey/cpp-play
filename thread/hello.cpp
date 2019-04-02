@@ -13,13 +13,14 @@ using namespace std;
 
 static const int num_threads = 8;
 static const int buffer_count = 2;
-static const int cmd_count = 1000;
+static const int cmd_count = 10000;
 static const int FPS_TIME = 16666;
 static const int INVALID = INT_MAX;
 static mutex acquire_lock;
 
 struct CmdQueue
 {
+    
     vector<int> buffer;
     atomic<bool> isReady;
 };
@@ -123,8 +124,8 @@ int main(int argc, char* argv[])
 {
     loguru::init(argc, argv);
     srand (time(NULL));
-    thread t1(t_prod, 10);
-    thread t2(t_consume, 20);
+    thread t1(t_prod, 20);
+    thread t2(t_consume, 30);
     
     t1.join();
     t2.join();
