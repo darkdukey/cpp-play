@@ -15,7 +15,7 @@ using namespace std::chrono;
 
 static const int num_threads = 8;
 static const int buffer_count = 2;
-static const int cmd_count = 1000;
+static const int cmd_count = 100000;
 static const int FPS_TIME = 16666;
 static const int INVALID = INT_MAX;
 static mutex acquire_lock;
