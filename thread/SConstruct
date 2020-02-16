@@ -3,4 +3,4 @@ if env['PLATFORM'] == 'win32':
     env.Append(CXXFLAGS = '/wd4068')
 else:
     env.Append(CXXFLAGS = '-std=c++11')
-env.Program('prog', ['hello.cpp'])
+env.Program('program.exe', ['hello.cpp'])
