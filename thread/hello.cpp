@@ -5,6 +5,8 @@
 #include <mutex>
 #include <thread>
 #include <vector>
+#include <sys/kdebug_signpost.h>
+#include <cmath>
 
 #define LOGURU_WITH_STREAMS 1
 
@@ -13,7 +15,6 @@
 using namespace std;
 using namespace std::chrono;
 
-static const int num_threads = 8;
 static const int buffer_count = 2;
 static const int cmd_count = 100000;
 static const int FPS_TIME = 16666;
@@ -55,6 +56,7 @@ void doProduce() {
 
     LOG_S(INFO) << "* Filling buffer: " << idx;
 
+    kdebug_signpost_start(1, 0, 0, 0, 1);
     time_start = steady_clock::now();
     for (size_t i = 0; i < cmd_count; i++) {
         v = rand() % 100;
@@ -62,6 +64,7 @@ void doProduce() {
     }
     queues[idx].isReady = true;
     time_end = steady_clock::now();
+    kdebug_signpost_end(1, 0, 0, 0, 1);
 
     int t, remaining_time;
     t = duration_cast<microseconds>(time_end - time_start).count();
@@ -85,14 +88,16 @@ void doConsume() {
 
     LOG_S(INFO) << "= Consume buffer: " << idx;
 
+    kdebug_signpost_start(2, 0, 0, 0, 2);
     auto time_start = steady_clock::now();
     for (auto it : queues[idx].buffer) {
-        sum += it;
+        sum += sqrt(it);
     }
     queues[idx].buffer.clear();
     queues[idx].isReady = false;
     auto time_end = steady_clock::now();
-
+    kdebug_signpost_end(2, 0, 0, 0, 2);
+    
     int t = duration_cast<microseconds>(time_end - time_start).count();
     LOG_S(INFO) << "= Sum: " << sum;
     LOG_S(INFO) << "= Consume Time: " << t;
