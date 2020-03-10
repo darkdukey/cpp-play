@@ -1,0 +1,26 @@
+cmake_minimum_required(VERSION 3.10)
+project(common)
+
+# include conan scripts
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+include(${CMAKE_BINARY_DIR}/conan_paths.cmake)
+conan_basic_setup()
+
+# Src and Include folders
+file(GLOB_RECURSE SRC_FILES "common/*.cpp" "common/*.hpp")
+include_directories("common")
+
+# Build Library
+# add_executable(canvas ${SRC_FILES})
+add_library(common ${SRC_FILES})
+target_compile_features(common PRIVATE cxx_std_11)
+target_link_libraries(common ${CONAN_LIBS})
+
+target_include_directories(common
+    PUBLIC 
+        $<INSTALL_INTERFACE:include>   
+    PRIVATE
+        ${CMAKE_SOURCE_DIR}/common
+)
+
+add_subdirectory(hex)

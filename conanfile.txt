@@ -1,0 +1,7 @@
+[requires]
+glm/0.9.9.5@g-truc/stable
+
+[generators]
+cmake
+cmake_paths
+cmake_find_package
