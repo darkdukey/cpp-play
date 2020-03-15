@@ -1,12 +1,12 @@
+#include <sys/kdebug_signpost.h>
 #include <time.h>
 #include <atomic>
 #include <chrono>
+#include <cmath>
 #include <iostream>
 #include <mutex>
 #include <thread>
 #include <vector>
-#include <sys/kdebug_signpost.h>
-#include <cmath>
 
 #define LOGURU_WITH_STREAMS 1
 
@@ -97,7 +97,7 @@ void doConsume() {
     queues[idx].isReady = false;
     auto time_end = steady_clock::now();
     kdebug_signpost_end(2, 0, 0, 0, 2);
-    
+
     int t = duration_cast<microseconds>(time_end - time_start).count();
     LOG_S(INFO) << "= Sum: " << sum;
     LOG_S(INFO) << "= Consume Time: " << t;
