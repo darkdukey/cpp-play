@@ -1,20 +1,14 @@
 cmake_minimum_required(VERSION 3.10)
 project(common)
 
-# include conan scripts
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-include(${CMAKE_BINARY_DIR}/conan_paths.cmake)
-conan_basic_setup()
-
 # Src and Include folders
-file(GLOB_RECURSE SRC_FILES "common/*.cpp" "common/*.hpp")
-include_directories("common")
+file(GLOB_RECURSE SRC_FILES "common/*.cpp" "common/*.h")
+include_directories("include")
 
 # Build Library
-# add_executable(canvas ${SRC_FILES})
 add_library(common ${SRC_FILES})
-target_compile_features(common PRIVATE cxx_std_11)
-target_link_libraries(common ${CONAN_LIBS})
+target_compile_features(common PUBLIC cxx_std_11)
+target_link_libraries(common)
 
 target_include_directories(common
     PUBLIC 
@@ -23,4 +17,10 @@ target_include_directories(common
         ${CMAKE_SOURCE_DIR}/common
 )
 
-add_subdirectory(hex)
+# Build Thread
+option (BUILD_THREAD "Build the thread" ON)
+if (BUILD_THREAD)
+    add_subdirectory(thread)
+endif()
+
+add_subdirectory(LRU)

@@ -1,0 +1,3 @@
+file(GLOB SRC_FILES "*.h" "*.cpp" )
+add_executable(lru ${SRC_FILES})
+target_link_libraries(lru PRIVATE common ${CONAN_LIBS})

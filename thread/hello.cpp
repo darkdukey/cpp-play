@@ -120,7 +120,7 @@ void t_consume() {
     }
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, const char* argv[]) {
     loguru::init(argc, argv);
     srand(time(NULL));
     thread t1(t_prod);
