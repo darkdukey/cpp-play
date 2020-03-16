@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.10)
 project(common)
 
+# include conan scripts
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+include(${CMAKE_BINARY_DIR}/conan_paths.cmake)
+conan_basic_setup()
+
 # Src and Include folders
 file(GLOB_RECURSE SRC_FILES "common/*.cpp" "common/*.h")
 include_directories("include")
@@ -18,9 +23,7 @@ target_include_directories(common
 )
 
 # Build Thread
-option (BUILD_THREAD "Build the thread" ON)
-if (BUILD_THREAD)
-    add_subdirectory(thread)
-endif()
-
+add_subdirectory(heapsort)
+add_subdirectory(hex)
 add_subdirectory(LRU)
+add_subdirectory(thread)
